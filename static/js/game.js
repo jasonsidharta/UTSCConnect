@@ -568,8 +568,15 @@ function setupControls() {
             return;
         }
 
-        if (e.key === "Escape" && !chatOpen) {
-            quitUconnect();
+        if (e.key === "Escape" && !chatOpen && !(typeof inMeeting !== "undefined" && inMeeting)) {
+            // Quit immediately — no confirm dialog
+            document.exitPointerLock();
+            gameStarted = false;
+            const canvas = document.querySelector("canvas");
+            if (canvas) canvas.remove();
+            document.getElementById("game-hud").style.display = "none";
+            document.getElementById("main-menu").style.display = "flex";
+            if (typeof loadLeaderboard === "function") loadLeaderboard();
             return;
         }
 
