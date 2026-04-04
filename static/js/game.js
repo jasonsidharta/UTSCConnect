@@ -568,6 +568,11 @@ function setupControls() {
             return;
         }
 
+        if (e.key === "Escape" && !chatOpen) {
+            quitUconnect();
+            return;
+        }
+
         if (e.key === "Enter") { toggleChat(); e.preventDefault(); return; }
 
         keys[k] = true;
