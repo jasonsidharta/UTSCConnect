@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+users.db
+.env
+# Large files in root
+-_moscow_state_university.glb
+university_of_galway_quadrangle.glb
+city_park_at_sunset.glb
+roblox_character.glb
+# Large models (>10MB)
+static/models/building9.glb
+static/models/building10.glb

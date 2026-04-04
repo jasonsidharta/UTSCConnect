@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game of Tears</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+</head>
+<body>
+    <!-- Animated background blobs -->
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <!-- AUTH SCREEN -->
+    <div id="auth-screen">
+        <div class="auth-box">
+            <div class="auth-logo">GOT</div>
+            <h1>Game of Tears</h1>
+            <p class="auth-subtitle">Learn. Play. Connect.</p>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="signup">Sign Up</button>
+                <button class="auth-tab" data-tab="login">Log In</button>
+            </div>
+
+            <div id="signup-form" class="auth-form">
+                <div class="input-group">
+                    <span class="input-icon">@</span>
+                    <input type="text" id="signup-username" placeholder="Choose a username" maxlength="20" autofocus>
+                </div>
+                <div class="input-group">
+                    <span class="input-icon">*</span>
+                    <input type="password" id="signup-password" placeholder="Create a password">
+                </div>
+                <button id="signup-btn" class="auth-submit">Create Account</button>
+            </div>
+
+            <div id="login-form" class="auth-form" style="display:none;">
+                <div class="input-group">
+                    <span class="input-icon">@</span>
+                    <input type="text" id="login-username" placeholder="Your username" maxlength="20">
+                </div>
+                <div class="input-group">
+                    <span class="input-icon">*</span>
+                    <input type="password" id="login-password" placeholder="Your password">
+                </div>
+                <button id="login-btn" class="auth-submit">Welcome Back</button>
+            </div>
+
+            <div id="auth-error" class="auth-error"></div>
+        </div>
+    </div>
+
+    <!-- MAIN MENU -->
+    <div id="main-menu" style="display:none;">
+        <div class="menu-header">
+            <div class="menu-user">
+                <div class="user-avatar" id="user-avatar">?</div>
+                <span id="menu-welcome">Welcome!</span>
+            </div>
+            <button id="logout-btn">Log Out</button>
+        </div>
+        <h1 class="menu-title">Game of Tears</h1>
+        <p class="menu-subtitle">What would you like to do today?</p>
+        <div class="menu-grid">
+            <div class="menu-card card-uconnect" data-page="uconnect">
+                <div class="card-glow"></div>
+                <div class="menu-icon">U</div>
+                <h3>Uconnect</h3>
+                <p>Enter the 3D multiplayer world</p>
+            </div>
+            <div class="menu-card card-games" data-page="games">
+                <div class="card-glow"></div>
+                <div class="menu-icon">G</div>
+                <h3>Games</h3>
+                <p>Play mini-games with friends</p>
+            </div>
+            <div class="menu-card card-practice" data-page="practice">
+                <div class="card-glow"></div>
+                <div class="menu-icon">P</div>
+                <h3>Practice</h3>
+                <p>Master C programming challenges</p>
+            </div>
+            <div class="menu-card card-quiz" data-page="quiz">
+                <div class="card-glow"></div>
+                <div class="menu-icon">Q</div>
+                <h3>Quiz</h3>
+                <p>Test your knowledge</p>
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="leaderboard">
+            <h3 class="lb-title">Practice Leaderboard</h3>
+            <div id="leaderboard-list" class="lb-list">
+                <p style="color:#888;font-size:13px;">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- UCONNECT CHARACTER SELECT -->
+    <div id="uconnect-select" style="display:none;">
+        <div class="select-box">
+            <h2>Choose Your Character</h2>
+            <div id="character-select">
+                <div class="char-option selected" data-char="0"><div class="char-preview" style="background:linear-gradient(135deg,#e74c3c,#c0392b);"></div><span>Red</span></div>
+                <div class="char-option" data-char="1"><div class="char-preview" style="background:linear-gradient(135deg,#3498db,#2980b9);"></div><span>Blue</span></div>
+                <div class="char-option" data-char="2"><div class="char-preview" style="background:linear-gradient(135deg,#2ecc71,#27ae60);"></div><span>Green</span></div>
+                <div class="char-option" data-char="3"><div class="char-preview" style="background:linear-gradient(135deg,#9b59b6,#8e44ad);"></div><span>Purple</span></div>
+                <div class="char-option" data-char="4"><div class="char-preview" style="background:linear-gradient(135deg,#f39c12,#e67e22);"></div><span>Gold</span></div>
+                <div class="char-option" data-char="5"><div class="char-preview" style="background:linear-gradient(135deg,#1abc9c,#16a085);"></div><span>Teal</span></div>
+            </div>
+            <div id="character-select-row2">
+                <div class="char-option" data-char="6"><div class="char-preview" style="background:linear-gradient(135deg,#e67e22,#d35400);"></div><span>Orange</span></div>
+                <div class="char-option" data-char="7"><div class="char-preview" style="background:linear-gradient(135deg,#e84393,#d63384);"></div><span>Pink</span></div>
+                <div class="char-option" data-char="8"><div class="char-preview" style="background:linear-gradient(135deg,#2c3e50,#1a252f);"></div><span>Dark</span></div>
+                <div class="char-option" data-char="9"><div class="char-preview" style="background:linear-gradient(135deg,#ecf0f1,#bdc3c7);"></div><span>White</span></div>
+                <div class="char-option" data-char="10"><div class="char-preview" style="background:linear-gradient(135deg,#f1c40f,#f39c12);"></div><span>Yellow</span></div>
+                <div class="char-option" data-char="11"><div class="char-preview" style="background:linear-gradient(135deg,#00cec9,#0984e3);"></div><span>Cyan</span></div>
+            </div>
+            <button id="enter-world-btn" class="auth-submit" style="margin-top:20px;">Enter World</button>
+            <button id="back-to-menu-btn" class="auth-back">Back to Menu</button>
+            <div class="controls-info">
+                <p><b>WASD</b> Move <b>Mouse</b> Look <b>Space</b> Jump <b>Enter</b> Chat <b>E</b> Meeting <b>V</b> Mic</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRACTICE SECTION -->
+    <div id="practice-section" style="display:none;">
+        <!-- Course Selection -->
+        <div id="practice-courses">
+            <div class="practice-header">
+                <button class="back-btn" onclick="document.getElementById('practice-section').style.display='none'; document.getElementById('main-menu').style.display='flex';">Back</button>
+                <h2>Practice</h2>
+                <span class="header-sub">Choose a course</span>
+            </div>
+            <div id="course-grid" class="topic-grid"></div>
+        </div>
+
+        <!-- Topic Selection (within a course) -->
+        <div id="practice-topics" style="display:none;">
+            <div class="practice-header">
+                <button class="back-btn" onclick="showPracticeCourses()">Back</button>
+                <h2 id="topics-title">Course</h2>
+                <span class="header-sub">Choose a topic</span>
+            </div>
+            <div id="topic-grid" class="topic-grid"></div>
+
+            <!-- Add Topic Form (contributor only) -->
+            <div id="add-topic-form" style="display:none;" class="add-form">
+                <h3>Add New Topic</h3>
+                <input type="text" id="at-title" placeholder="Topic title (e.g. Sequences and Series)" class="aq-input">
+                <input type="text" id="at-desc" placeholder="Short description" class="aq-input">
+                <div style="display:flex;gap:10px;">
+                    <input type="text" id="at-icon" placeholder="Icon letter (e.g. S)" maxlength="2" class="aq-input" style="width:80px;">
+                    <input type="color" id="at-color" value="#B89AD4" class="aq-input" style="width:60px;padding:4px;height:42px;">
+                </div>
+                <button id="at-submit" class="btn-check" style="margin-top:10px;">Create Topic</button>
+                <div id="at-status" style="margin-top:8px;font-size:13px;"></div>
+            </div>
+        </div>
+
+        <div id="practice-questions" style="display:none;">
+            <div class="practice-header">
+                <button class="back-btn" onclick="showCourseTopics(currentCourse)">Back</button>
+                <h2 id="questions-title">Topic</h2>
+            </div>
+            <div id="questions-grid" class="questions-grid"></div>
+
+            <!-- Add Question Form (contributor only) -->
+            <div id="add-question-form" style="display:none;" class="add-form">
+                <h3>Add New Question</h3>
+                <input type="text" id="aq-name" placeholder="Question title (e.g. Chain Rule)" class="aq-input">
+                <select id="aq-difficulty" class="aq-input">
+                    <option value="EASY">EASY</option>
+                    <option value="MEDIUM">MEDIUM</option>
+                    <option value="HARD">HARD</option>
+                </select>
+                <input type="text" id="aq-desc" placeholder="Problem in LaTeX (e.g. \int x^3 \, dx)" class="aq-input">
+                <div id="aq-desc-preview" class="answer-preview" style="min-height:30px;"></div>
+                <p style="font-size:12px;color:#888;margin-bottom:10px;">Answer will be checked by Gemini AI — no exact answer needed.</p>
+                <button id="aq-submit" class="btn-check" style="margin-top:10px;">Submit Question</button>
+                <div id="aq-status" style="margin-top:8px;font-size:13px;"></div>
+            </div>
+        </div>
+
+        <div id="practice-challenge" style="display:none;">
+            <div class="practice-header">
+                <button class="back-btn" onclick="showQuestions(currentTopic)">Back</button>
+                <h2 id="challenge-title">Problem</h2>
+                <span id="challenge-topic" class="challenge-topic-label"></span>
+                <span id="challenge-diff" class="diff-badge"></span>
+            </div>
+            <div class="challenge-body">
+                <div class="challenge-left">
+                    <p id="challenge-desc" class="challenge-desc"></p>
+                    <p id="challenge-sig" class="challenge-sig"></p>
+                    <div id="challenge-struct" class="struct-box" style="display:none;"><code></code></div>
+                </div>
+                <div class="challenge-right">
+                    <div class="editor-label">// Your implementation:</div>
+                    <textarea id="code-editor" class="code-editor" spellcheck="false"></textarea>
+                    <div id="answer-box" style="display:none;">
+                        <input type="text" id="answer-input" class="answer-input" placeholder="Type answer in LaTeX, e.g. \frac{x^3}{3} + C" autocomplete="off">
+                        <div id="answer-preview" class="answer-preview"></div>
+                    </div>
+                    <div class="challenge-buttons">
+                        <button class="btn-check" onclick="checkWithAI()">Check with AI</button>
+                        <button class="btn-hint" onclick="showHint()">Hint</button>
+                        <button class="btn-solution" onclick="showSolution()">Solution</button>
+                    </div>
+                    <div id="ai-result" class="ai-result" style="display:none;"></div>
+                    <div id="hint-box" class="hint-box" style="display:none;"></div>
+                    <div id="solution-box" class="solution-box" style="display:none;"><code></code></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHESS / GAMES SECTION -->
+    <div id="games-section" style="display:none;">
+        <div id="chess-menu">
+            <div class="practice-header">
+                <button class="back-btn" onclick="document.getElementById('games-section').style.display='none'; document.getElementById('main-menu').style.display='flex';">Back</button>
+                <h2>Games</h2>
+            </div>
+            <div class="topic-grid" style="max-width:500px;">
+                <div class="topic-card" onclick="startChessOnline()">
+                    <div class="topic-icon" style="background:var(--black);color:#fff;">♟</div>
+                    <h3>Chess</h3>
+                    <p>1v1 Multiplayer — 5 min timer</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="chess-waiting" style="display:none;">
+            <div class="placeholder-content">
+                <div class="placeholder-icon" style="font-size:64px;">♟</div>
+                <h2>Waiting for opponent...</h2>
+                <button class="auth-submit" style="width:200px;margin:20px auto;" onclick="cancelChessWaiting()">Cancel</button>
+            </div>
+        </div>
+
+        <div id="chess-game" style="display:none;">
+            <div class="chess-header">
+                <div class="chess-player-bar opp">
+                    <span id="chess-opp-name">Opponent</span>
+                    <span id="chess-opp-timer" class="chess-timer-display">5:00</span>
+                </div>
+                <span id="chess-turn" class="chess-turn">Your turn</span>
+                <button class="quiz-quit-btn" onclick="resignChess()">Resign</button>
+            </div>
+            <div id="chess-board" class="chess-board"></div>
+            <div class="chess-player-bar mine">
+                <span id="chess-my-name">You</span>
+                <span id="chess-my-timer" class="chess-timer-display">5:00</span>
+            </div>
+        </div>
+
+        <div id="chess-result" style="display:none;">
+            <div class="placeholder-content">
+                <h2 id="chess-result-title">Result</h2>
+                <div id="chess-result-body" class="quiz-result-grid"></div>
+                <button class="auth-submit" style="width:200px;margin:20px auto;" onclick="showChessMenu()">Play Again</button>
+                <button class="auth-back" style="width:200px;margin:10px auto;" onclick="document.getElementById('games-section').style.display='none'; document.getElementById('main-menu').style.display='flex';">Back to Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUIZ SECTION -->
+    <div id="quiz-section" style="display:none;">
+        <div id="quiz-subject-select">
+            <div class="practice-header">
+                <button class="back-btn" onclick="document.getElementById('quiz-section').style.display='none'; document.getElementById('main-menu').style.display='flex';">Back</button>
+                <h2>Quiz</h2>
+                <span class="header-sub">Choose a subject</span>
+            </div>
+            <div class="topic-grid" style="max-width:700px;">
+                <div class="topic-card" onclick="selectQuizSubject('mata37')">
+                    <div class="topic-icon" style="background:var(--pink);">M</div>
+                    <h3>MATA37</h3><p>Calculus II</p>
+                </div>
+                <div class="topic-card" onclick="selectQuizSubject('csca48')">
+                    <div class="topic-icon" style="background:var(--purple);">C</div>
+                    <h3>CSCA48</h3><p>Computer Science II</p>
+                </div>
+            </div>
+        </div>
+        <div id="quiz-mode-select" style="display:none;">
+            <div class="practice-header">
+                <button class="back-btn" onclick="showQuizSubjects()">Back</button>
+                <h2 id="quiz-mode-title">Subject</h2>
+                <span class="header-sub">Choose quiz mode</span>
+            </div>
+            <div class="topic-grid" style="max-width:700px;">
+                <div class="topic-card" onclick="selectQuizMode('offline')">
+                    <div class="topic-icon" style="background:var(--lime);color:var(--black);">1P</div>
+                    <h3>Offline</h3><p>Solo — 5 questions, 10 min timer</p>
+                </div>
+                <div class="topic-card" onclick="selectQuizMode('online')">
+                    <div class="topic-icon" style="background:var(--teal);color:var(--black);">2P</div>
+                    <h3>Online</h3><p>1v1 — race to solve first!</p>
+                </div>
+            </div>
+        </div>
+        <div id="quiz-waiting" style="display:none;">
+            <div class="placeholder-content">
+                <div class="placeholder-icon" style="animation:spinSlow 3s linear infinite;">*</div>
+                <h2>Waiting for opponent...</h2>
+                <p>Subject: <strong id="quiz-waiting-subject"></strong></p>
+                <button class="auth-submit" style="width:200px;margin:20px auto;" onclick="cancelQuizWaiting()">Cancel</button>
+            </div>
+        </div>
+        <div id="quiz-play" style="display:none;">
+            <div class="quiz-top-bar">
+                <button id="quiz-quit-btn" class="quiz-quit-btn" onclick="quitQuiz()">Quit</button>
+                <span id="quiz-q-number">Question 1 of 5</span>
+                <span id="quiz-timer" class="quiz-timer">10:00</span>
+                <span id="quiz-my-score">Score: 0</span>
+            </div>
+            <div id="quiz-opponent-bar" class="quiz-opponent-bar" style="display:none;">
+                <span id="quiz-opponent-name">vs Opponent</span>
+                <span id="quiz-opp-score">Opponent: 0</span>
+            </div>
+            <div class="quiz-question-area">
+                <span id="quiz-q-diff" class="diff-badge easy">EASY</span>
+                <h3 id="quiz-q-name">Question</h3>
+                <div id="quiz-q-desc" class="challenge-desc"></div>
+                <input type="text" id="quiz-answer" class="answer-input" placeholder="Type answer in LaTeX..." style="display:none;">
+                <textarea id="quiz-code" class="code-editor" style="display:none;min-height:180px;" spellcheck="false"></textarea>
+                <div style="display:flex;gap:10px;margin-top:12px;">
+                    <button id="quiz-prev-btn" class="back-btn" onclick="prevQuizQuestion()" style="display:none;">Back</button>
+                    <button id="quiz-next-btn" class="btn-hint" onclick="nextQuizQuestion()" style="display:none;">Next</button>
+                    <button id="quiz-submit-btn" class="btn-check" onclick="handleQuizSubmit()" style="display:none;">Submit Quiz</button>
+                </div>
+                <div id="quiz-feedback" class="ai-result" style="display:none;margin-top:12px;"></div>
+            </div>
+        </div>
+        <div id="quiz-results" style="display:none;">
+            <div class="placeholder-content">
+                <h2 id="quiz-result-title">Results</h2>
+                <div id="quiz-result-body" class="quiz-result-grid"></div>
+                <button class="auth-submit" style="width:200px;margin:20px auto;" onclick="showQuizSubjects()">Play Again</button>
+                <button class="auth-back" style="width:200px;margin:10px auto;" onclick="document.getElementById('quiz-section').style.display='none'; document.getElementById('main-menu').style.display='flex';">Back to Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PLACEHOLDER PAGES -->
+    <div id="placeholder-page" style="display:none;">
+        <div class="placeholder-content">
+            <div class="placeholder-icon">*</div>
+            <h2 id="placeholder-title">Coming Soon</h2>
+            <p>This feature is under development.</p>
+            <button id="placeholder-back" class="auth-submit">Back to Menu</button>
+        </div>
+    </div>
+
+    <!-- Game HUD -->
+    <div id="game-hud" style="display: none;">
+        <div id="crosshair"></div>
+        <div id="player-count">Players: 1</div>
+        <div id="chat-container">
+            <div id="chat-messages"></div>
+            <input type="text" id="chat-input" placeholder="Press Enter to chat..." maxlength="200">
+        </div>
+        <div id="prox-voice-hud" style="display:none;">
+            <span id="prox-mic-icon">MIC</span>
+            <span id="prox-voice-status">Voice Chat Active</span>
+        </div>
+        <button id="prox-mic-toggle" style="display:none;">V — Toggle Mic</button>
+        <button id="meeting-btn" style="display:none;">Press E — Enter Meeting</button>
+        <div id="meeting-overlay" style="display:none;">
+            <div id="meeting-header">
+                <span id="meeting-title">Park Meeting</span>
+                <span id="meeting-count">1 participant</span>
+                <button id="meeting-leave-btn">Leave</button>
+            </div>
+            <div id="meeting-grid">
+                <div class="meeting-tile" id="local-tile">
+                    <video id="local-video" autoplay muted playsinline></video>
+                    <span class="tile-name">You</span>
+                </div>
+            </div>
+            <div id="meeting-controls">
+                <button id="toggle-cam" class="meeting-ctrl-btn on">Camera ON</button>
+                <button id="toggle-mic" class="meeting-ctrl-btn on">Mic ON</button>
+            </div>
+        </div>
+        <div id="pointer-lock-msg"><span>Click to start playing</span></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.min.js"></script>
+    <script>const socket = io();</script>
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/practice.js"></script>
+    <script src="/static/js/quiz.js"></script>
+    <script src="/static/js/chess.js"></script>
+    <script src="/static/js/game.js"></script>
+    <script src="/static/js/meeting.js"></script>
+</body>
+</html>
