@@ -1102,6 +1102,23 @@ socket.on("chat_message", (data) => {
 // Combat removed — this is now a peaceful multiplayer world
 
 // --- Resize ---
+function quitUconnect() {
+    if (!confirm("Leave the world?")) return;
+    document.exitPointerLock();
+    gameStarted = false;
+
+    // Remove canvas
+    const canvas = document.querySelector("canvas");
+    if (canvas) canvas.remove();
+
+    // Hide HUD, show menu
+    document.getElementById("game-hud").style.display = "none";
+    document.getElementById("main-menu").style.display = "flex";
+
+    // Reload leaderboard
+    if (typeof loadLeaderboard === "function") loadLeaderboard();
+}
+
 function onResize() {
     if (!camera || !renderer) return;
     camera.aspect = window.innerWidth / window.innerHeight;

@@ -914,6 +914,16 @@ select.aq-input { font-family: inherit; cursor: pointer; }
 #game-hud { pointer-events: none; }
 #game-hud input, #game-hud button { pointer-events: auto; }
 
+#quit-game-btn {
+    position: fixed; top: 16px; left: 20px;
+    padding: 8px 18px; font-size: 13px; font-weight: 700; font-family: inherit;
+    border: 2px solid #BE123C; border-radius: 10px;
+    background: #FECDD3; color: #BE123C; cursor: pointer;
+    z-index: 10; pointer-events: auto;
+    transition: all 0.15s;
+}
+#quit-game-btn:hover { background: #BE123C; color: #fff; }
+
 #crosshair {
     position: fixed; top: 50%; left: 50%;
     transform: translate(-50%, -50%);
