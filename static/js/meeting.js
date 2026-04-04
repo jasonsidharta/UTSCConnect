@@ -2,8 +2,14 @@
 // Meeting Room — WebRTC Video Chat
 // ============================================
 
-const STUN_SERVERS = {
-    iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+const ICE_SERVERS = {
+    iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" },
+        { urls: "stun:stun2.l.google.com:19302" },
+        { urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject" },
+        { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
+    ]
 };
 
 let localStream = null;
@@ -86,7 +92,7 @@ function leaveMeeting() {
 
 // --- Create peer connection ---
 function createPeer(peerId, initiator) {
-    const pc = new RTCPeerConnection(STUN_SERVERS);
+    const pc = new RTCPeerConnection(ICE_SERVERS);
     peers[peerId] = pc;
 
     // Add local tracks
@@ -140,11 +146,21 @@ function addVideoTile(peerId, stream) {
     const video = document.createElement("video");
     video.autoplay = true;
     video.playsInline = true;
+    video.muted = false; // IMPORTANT: don't mute remote streams
+    video.volume = 1.0;
     video.srcObject = stream;
+    video.play().catch(() => {}); // force play
+
+    // Also add a hidden audio element as backup for sound
+    const audio = document.createElement("audio");
+    audio.autoplay = true;
+    audio.srcObject = stream;
+    audio.volume = 1.0;
+    audio.play().catch(() => {});
+    tile.appendChild(audio);
 
     const name = document.createElement("span");
     name.className = "tile-name";
-    // Try to get username from game
     if (typeof otherPlayers !== "undefined" && otherPlayers[peerId]) {
         name.textContent = otherPlayers[peerId].data.username || peerId.substring(0, 8);
     } else {
@@ -295,7 +311,27 @@ async function initProximityMic() {
     }
 }
 
-// No Web Audio API needed — using simple audio element volume
+// Unlock audio on first user click (browsers block autoplay)
+let audioUnlocked = false;
+function unlockAudio() {
+    if (audioUnlocked) return;
+    audioUnlocked = true;
+    // Create and play a silent audio to unlock
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === "suspended") ctx.resume();
+    const buf = ctx.createBuffer(1, 1, 22050);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    src.start(0);
+    // Also try to play any existing audio elements
+    document.querySelectorAll("audio, video").forEach(el => {
+        if (el.paused && el.srcObject) el.play().catch(() => {});
+    });
+    console.log("Audio unlocked");
+}
+document.addEventListener("click", unlockAudio, { once: false });
+document.addEventListener("keydown", unlockAudio, { once: false });
 
 // Called every frame from game.js update loop
 function updateProximityVoice(myPlayer, otherPlayers) {
@@ -399,7 +435,7 @@ function stopProximityVoice() {
 function createProxPeer(peerId, initiator) {
     if (proxPeers[peerId]) return; // already exists
 
-    const pc = new RTCPeerConnection(STUN_SERVERS);
+    const pc = new RTCPeerConnection(ICE_SERVERS);
 
     // Add local audio track
     if (proxStream) {
