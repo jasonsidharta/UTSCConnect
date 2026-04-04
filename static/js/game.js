@@ -152,25 +152,15 @@ function initGame() {
         initProximityMic();
     }
 
-    // Debug display
-    const debugDiv = document.createElement("div");
-    debugDiv.style.cssText = "position:fixed;top:50px;left:10px;color:lime;font-size:14px;font-family:monospace;z-index:999;background:rgba(0,0,0,0.7);padding:8px 12px;border-radius:6px;pointer-events:none";
-    document.body.appendChild(debugDiv);
-
     // Game loop
     let lastTime = performance.now();
     function gameLoop(now) {
+        if (!gameStarted) return; // stop loop when quit
         requestAnimationFrame(gameLoop);
         const dt = Math.min((now - lastTime) / 1000, 0.1);
         lastTime = now;
         update(dt);
         renderer.render(scene, camera);
-
-        // Update debug info
-        debugDiv.textContent =
-            `Locked: ${pointerLocked} | Chat: ${chatOpen} | Player: ${!!myPlayer}\n` +
-            `Keys: W=${!!keys["w"]} A=${!!keys["a"]} S=${!!keys["s"]} D=${!!keys["d"]}\n` +
-            `Pos: ${camera.position.x.toFixed(1)}, ${camera.position.y.toFixed(1)}, ${camera.position.z.toFixed(1)}`;
     }
     requestAnimationFrame(gameLoop);
 
@@ -569,12 +559,21 @@ function setupControls() {
         }
 
         if (e.key === "Escape" && !chatOpen && !(typeof inMeeting !== "undefined" && inMeeting)) {
-            // Quit immediately — no confirm dialog
+            // Quit immediately
             document.exitPointerLock();
             gameStarted = false;
+            // Remove canvas
             const canvas = document.querySelector("canvas");
             if (canvas) canvas.remove();
+            // Hide ALL game UI
             document.getElementById("game-hud").style.display = "none";
+            // Hide debug overlay
+            const debug = document.querySelector("[style*='color:lime']");
+            if (debug) debug.style.display = "none";
+            // Hide pointer lock message
+            const lockMsg = document.getElementById("pointer-lock-msg");
+            if (lockMsg) lockMsg.style.display = "none";
+            // Show main menu
             document.getElementById("main-menu").style.display = "flex";
             if (typeof loadLeaderboard === "function") loadLeaderboard();
             return;
