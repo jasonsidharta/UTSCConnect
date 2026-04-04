@@ -781,13 +781,32 @@ Reply with ONLY the word CORRECT or WRONG on the first line. Then a one-sentence
 
     try:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
-        resp = http_requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=15)
+        resp = http_requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=20)
         resp_data = resp.json()
-        ai_text = resp_data["candidates"][0]["content"]["parts"][0]["text"].strip()
-    except:
-        ai_text = "WRONG\nCould not check answer."
+        if "candidates" in resp_data and len(resp_data["candidates"]) > 0:
+            ai_text = resp_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+        elif "error" in resp_data:
+            print(f"[Quiz AI Error] {resp_data['error'].get('message', resp_data['error'])}")
+            ai_text = "ERROR\nAI service unavailable. Try again."
+        else:
+            ai_text = "ERROR\nUnexpected AI response."
+    except Exception as e:
+        print(f"[Quiz AI Exception] {e}")
+        ai_text = "ERROR\nCould not reach AI service."
 
     is_correct = ai_text.upper().startswith("CORRECT")
+    is_error = ai_text.upper().startswith("ERROR")
+
+    # If AI failed, don't penalize — let player retry
+    if is_error:
+        emit("quiz_wrong_answer", {
+            "question_idx": q_idx,
+            "penalty": 0,
+            "p1_score": match["p1_score"],
+            "p2_score": match["p2_score"],
+            "ai_response": ai_text.replace("ERROR\n", ""),
+        }, to=sid)
+        return
 
     # Determine which player
     is_p1 = (sid == match["p1_sid"])
