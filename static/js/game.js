@@ -1,5 +1,5 @@
 // ============================================
-// GameofTears - 3D Multiplayer Browser Game
+// UTSC Connect - 3D Multiplayer Browser Game
 // ============================================
 
 // socket is created in index.html before all scripts

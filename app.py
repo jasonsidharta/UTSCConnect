@@ -1224,6 +1224,6 @@ if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 5000))
     debug = os.environ.get("RENDER") is None  # debug only locally
-    print("=== GameofTears Server ===")
+    print("=== UTSC Connect Server ===")
     print(f"Open http://localhost:{port} in your browser")
     socketio.run(app, host="0.0.0.0", port=port, debug=debug)
