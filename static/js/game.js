@@ -132,6 +132,19 @@ function initGame() {
             spawnExistingPlayers(pendingInit);
             pendingInit = null;
         }
+        // Spawn any players who joined while scene was loading
+        for (const p of pendingJoins) {
+            if (p.id === myId || otherPlayers[p.id]) continue;
+            const obj = createPlayerMesh(p);
+            otherPlayers[p.id] = {
+                ...obj,
+                targetPos: { x: p.x, y: p.y - 0.1, z: p.z },
+                targetRy: p.ry || 0,
+                data: p,
+            };
+        }
+        pendingJoins = [];
+        updatePlayerCount();
     });
 
     // Request mic permission early for proximity voice (non-blocking)
@@ -1011,13 +1024,24 @@ function spawnExistingPlayers(playersData) {
     updatePlayerCount();
 }
 
+// Queue players who join before scene is ready
+let pendingJoins = [];
+
 socket.on("player_joined", (p) => {
     if (p.id === myId) return;
-    if (!scene) return;
+
+    if (!scene) {
+        // Queue for later
+        pendingJoins.push(p);
+        return;
+    }
+
+    if (otherPlayers[p.id]) return; // already exists
+
     const obj = createPlayerMesh(p);
     otherPlayers[p.id] = {
         ...obj,
-        targetPos: { x: p.x, y: p.y + 1.4, z: p.z },
+        targetPos: { x: p.x, y: p.y - 0.1, z: p.z },
         targetRy: p.ry || 0,
         data: p,
     };
