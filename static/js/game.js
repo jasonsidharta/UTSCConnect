@@ -559,20 +559,59 @@ function setupControls() {
         }
 
         if (e.key === "Escape" && !chatOpen && !(typeof inMeeting !== "undefined" && inMeeting)) {
-            // Quit immediately
             document.exitPointerLock();
             gameStarted = false;
+
+            // Leave meeting if in one
+            if (typeof inMeeting !== "undefined" && inMeeting && typeof leaveMeeting === "function") {
+                leaveMeeting();
+            }
+
+            // Stop proximity voice
+            if (typeof proxActive !== "undefined" && proxActive && typeof stopProximityVoice === "function") {
+                stopProximityVoice();
+            }
+
+            // Stop proximity mic stream
+            if (typeof proxStream !== "undefined" && proxStream) {
+                proxStream.getTracks().forEach(t => t.stop());
+                proxStream = null;
+                proxMicReady = false;
+            }
+
+            // Stop any local media streams (camera/mic)
+            if (typeof localStream !== "undefined" && localStream) {
+                localStream.getTracks().forEach(t => t.stop());
+                localStream = null;
+            }
+
+            // Close all proximity peers
+            if (typeof proxPeers !== "undefined") {
+                for (const id in proxPeers) {
+                    if (proxPeers[id].pc) proxPeers[id].pc.close();
+                    if (proxPeers[id].audioEl) { proxPeers[id].audioEl.pause(); proxPeers[id].audioEl.srcObject = null; proxPeers[id].audioEl.remove(); }
+                }
+                for (const id in proxPeers) delete proxPeers[id];
+            }
+
+            // Remove all audio elements
+            document.querySelectorAll("audio[id^='prox-audio']").forEach(el => { el.pause(); el.srcObject = null; el.remove(); });
+
             // Remove canvas
             const canvas = document.querySelector("canvas");
             if (canvas) canvas.remove();
+
             // Hide ALL game UI
             document.getElementById("game-hud").style.display = "none";
-            // Hide debug overlay
-            const debug = document.querySelector("[style*='color:lime']");
-            if (debug) debug.style.display = "none";
-            // Hide pointer lock message
-            const lockMsg = document.getElementById("pointer-lock-msg");
-            if (lockMsg) lockMsg.style.display = "none";
+            const lockMsg2 = document.getElementById("pointer-lock-msg");
+            if (lockMsg2) lockMsg2.style.display = "none";
+            const proxHud = document.getElementById("prox-voice-hud");
+            if (proxHud) proxHud.style.display = "none";
+            const proxToggle = document.getElementById("prox-mic-toggle");
+            if (proxToggle) proxToggle.style.display = "none";
+            const meetBtn = document.getElementById("meeting-btn");
+            if (meetBtn) meetBtn.style.display = "none";
+
             // Show main menu
             document.getElementById("main-menu").style.display = "flex";
             if (typeof loadLeaderboard === "function") loadLeaderboard();
