@@ -863,19 +863,26 @@ function preloadCharacters(callback) {
 }
 
 function createPlayerMesh(playerData) {
+    if (!scene) {
+        console.error("[Game] Cannot create player mesh - scene not ready!", playerData.username);
+        return { mesh: null, label: null };
+    }
+
     const group = new THREE.Group();
-    group.position.set(playerData.x, playerData.y - 0.1, playerData.z);
+    const yPos = (playerData.y || 1.0) - 0.1;
+    group.position.set(playerData.x || 0, yPos, playerData.z || 0);
     group.rotation.y = playerData.ry || 0;
     scene.add(group);
 
     const charIndex = parseInt(playerData.character) || 0;
-    addCharacterToGroup(group, charIndex, playerData.color);
+    addCharacterToGroup(group, charIndex, playerData.color || "#e74c3c");
 
     // Name label
-    const label = createTextSprite(playerData.username, playerData.color);
-    label.position.set(playerData.x, playerData.y + 3.5, playerData.z);
+    const label = createTextSprite(playerData.username || "Player", playerData.color || "#e74c3c");
+    label.position.set(playerData.x || 0, yPos + 3.6, playerData.z || 0);
     scene.add(label);
 
+    console.log("[Game] Created mesh for", playerData.username, "at", playerData.x, yPos, playerData.z, "char:", charIndex);
     return { mesh: group, label };
 }
 
@@ -896,7 +903,9 @@ const CHARACTER_STYLES = [
 ];
 
 function addCharacterToGroup(group, charIndex, fallbackColor) {
+    if (isNaN(charIndex) || charIndex < 0) charIndex = 0;
     const style = CHARACTER_STYLES[charIndex % CHARACTER_STYLES.length];
+    if (!style) { console.error("No character style for index", charIndex); return; }
     const bodyColor = style.body;
     const legColor = style.legs;
     const skinColor = 0xFFDBAC;
