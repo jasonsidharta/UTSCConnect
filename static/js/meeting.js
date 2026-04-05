@@ -7,8 +7,8 @@ const ICE_SERVERS = {
         { urls: "stun:stun.l.google.com:19302" },
         { urls: "stun:stun1.l.google.com:19302" },
         { urls: "stun:stun2.l.google.com:19302" },
-        { urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject" },
-        { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
+        { urls: "stun:stun3.l.google.com:19302" },
+        { urls: "stun:stun4.l.google.com:19302" },
     ]
 };
 
@@ -534,50 +534,60 @@ socket.on("webrtc_offer", async (data) => {
     }
 
     // Otherwise, handle as proximity voice
-    // Auto-start proximity if someone sends us an offer (they detected us as nearby)
-    if (!proxActive && proxMicReady) {
+    // Auto-start mic if not ready
+    if (!proxMicReady) {
+        await initProximityMic();
+    }
+    if (!proxActive) {
         startProximityVoice();
     }
-    if (!proxMicReady) return;
     let pp = proxPeers[data.from];
     if (!pp) {
         createProxPeer(data.from, false);
         pp = proxPeers[data.from];
     }
+    if (!pp || !pp.pc) return;
     const pc = pp.pc;
-    await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
-    const answer = await pc.createAnswer();
-    await pc.setLocalDescription(answer);
-    socket.emit("webrtc_answer", { to: data.from, answer: pc.localDescription });
+    try {
+        await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        socket.emit("webrtc_answer", { to: data.from, answer: pc.localDescription });
+        console.log("[Prox] Answered offer from", data.from);
+    } catch(e) {
+        console.error("[Prox] Error handling offer:", e);
+    }
 });
 
 // Override answer handler for both systems
 const _origAnswerHandler = socket.listeners("webrtc_answer")[0];
 socket.off("webrtc_answer");
 socket.on("webrtc_answer", async (data) => {
-    // Check meeting peers first
-    if (peers[data.from]) {
-        await peers[data.from].setRemoteDescription(new RTCSessionDescription(data.answer));
-        return;
-    }
-    // Then proximity peers
-    if (proxPeers[data.from] && proxPeers[data.from].pc) {
-        await proxPeers[data.from].pc.setRemoteDescription(new RTCSessionDescription(data.answer));
-    }
+    try {
+        if (peers[data.from]) {
+            await peers[data.from].setRemoteDescription(new RTCSessionDescription(data.answer));
+            console.log("[WebRTC] Answer from", data.from, "(meeting)");
+            return;
+        }
+        if (proxPeers[data.from] && proxPeers[data.from].pc) {
+            await proxPeers[data.from].pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+            console.log("[Prox] Answer from", data.from);
+        }
+    } catch(e) { console.error("[WebRTC] Answer error:", e); }
 });
 
 // Override ICE handler for both systems
 socket.off("webrtc_ice");
 socket.on("webrtc_ice", async (data) => {
-    // Check meeting peers
-    if (peers[data.from]) {
-        if (data.candidate) await peers[data.from].addIceCandidate(new RTCIceCandidate(data.candidate));
-        return;
-    }
-    // Proximity peers
-    if (proxPeers[data.from] && proxPeers[data.from].pc) {
-        if (data.candidate) await proxPeers[data.from].pc.addIceCandidate(new RTCIceCandidate(data.candidate));
-    }
+    try {
+        if (peers[data.from]) {
+            if (data.candidate) await peers[data.from].addIceCandidate(new RTCIceCandidate(data.candidate));
+            return;
+        }
+        if (proxPeers[data.from] && proxPeers[data.from].pc) {
+            if (data.candidate) await proxPeers[data.from].pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+        }
+    } catch(e) { console.error("[WebRTC] ICE error:", e); }
 });
 
 // V key toggles proximity mic (added in game.js keydown handler via this listener)
