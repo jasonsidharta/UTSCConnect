@@ -126,13 +126,12 @@ function initGame() {
         yaw = myPlayer.ry || 0;
     }
 
-    // Preload character models, then spawn any queued players
+    // Preload character models, then request all current players from server
     preloadCharacters(() => {
         if (pendingInit) {
             spawnExistingPlayers(pendingInit);
             pendingInit = null;
         }
-        // Spawn any players who joined while scene was loading
         for (const p of pendingJoins) {
             if (p.id === myId || otherPlayers[p.id]) continue;
             const obj = createPlayerMesh(p);
@@ -145,6 +144,9 @@ function initGame() {
         }
         pendingJoins = [];
         updatePlayerCount();
+
+        // Ask server for all current in-game players (catches anyone we missed)
+        socket.emit("request_players");
     });
 
     // Request mic permission early for proximity voice (non-blocking)
@@ -1076,6 +1078,12 @@ function spawnExistingPlayers(playersData) {
 
 // Queue players who join before scene is ready
 let pendingJoins = [];
+
+// Server sends all current in-game players (called after scene is ready)
+socket.on("sync_players", (data) => {
+    if (!scene) return;
+    spawnExistingPlayers(data.players);
+});
 
 socket.on("player_joined", (p) => {
     if (p.id === myId) return;

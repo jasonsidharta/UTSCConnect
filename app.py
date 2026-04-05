@@ -1072,9 +1072,9 @@ def on_connect():
     player = create_player(sid)
     players[sid] = player
 
-    emit("init", {"self": player, "players": players})
-    emit("player_joined", player, broadcast=True, include_self=False)
-    print(f"[+] {player['username']} connected ({len(players)} players)")
+    # Send self data + all players who are already in the game
+    emit("init", {"self": player, "players": {k: v for k, v in players.items() if v.get("in_game")}})
+    print(f"[+] {player['username']} connected ({len(players)} sockets)")
 
 
 @socketio.on("disconnect")
@@ -1122,16 +1122,30 @@ def on_disconnect():
         print(f"[-] {player['username']} disconnected ({len(players)} players)")
 
 
+@socketio.on("request_players")
+def on_request_players():
+    """Client calls this when scene is ready to get all in-game players."""
+    sid = request.sid
+    in_game_players = {k: v for k, v in players.items() if v.get("in_game") and k != sid}
+    emit("sync_players", {"players": in_game_players})
+
+
 @socketio.on("set_username")
 def on_set_username(data):
     sid = request.sid
     if sid in players:
-        old_name = players[sid]["username"]
         new_name = data.get("username", "").strip()[:20]
         character = data.get("character", "default")
         if new_name:
+            was_in_game = players[sid].get("in_game", False)
             players[sid]["username"] = new_name
             players[sid]["character"] = character
+            players[sid]["in_game"] = True
+
+            if not was_in_game:
+                # First time entering game — broadcast player_joined to everyone in game
+                emit("player_joined", players[sid], broadcast=True, include_self=False)
+
             emit(
                 "player_updated",
                 {"id": sid, "username": new_name, "character": character},
@@ -1141,7 +1155,7 @@ def on_set_username(data):
                 "chat_message",
                 {
                     "username": "Server",
-                    "message": f"{old_name} joined as {new_name}",
+                    "message": f"{new_name} joined the game",
                     "color": "#95a5a6",
                 },
                 broadcast=True,
